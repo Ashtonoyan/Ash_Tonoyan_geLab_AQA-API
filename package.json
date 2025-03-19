@@ -11,5 +11,8 @@
     "@types/node": "^22.13.10",
     "typescript": "^5.5.3"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
 }
