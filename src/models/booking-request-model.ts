@@ -5,7 +5,7 @@ export interface BookingRequest {
     firstname: string;
     lastname: string;
     depositpaid: boolean;
-    dates: BookingDates;
+    bookingdates: BookingDates;
     email: string;
     phone: string;
 }

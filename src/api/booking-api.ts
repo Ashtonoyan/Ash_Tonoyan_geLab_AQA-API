@@ -1,19 +1,26 @@
 import {APIRequestContext} from "@playwright/test";
 import {BookingRequest} from "../models/booking-request-model";
 import {BookingResponse} from "../models/booking-response-model";
+import { request } from 'playwright';
+
 
 export class BookingAPI{
-    private request: APIRequestContext;
+    private request!: APIRequestContext;
     private token: string | null = null;
     private baseUrl: string;
 
-    constructor(request: APIRequestContext, baseUrl: string){
-        this.request = request;
+
+    constructor(baseUrl: string){
         this.baseUrl = baseUrl;
     }
 
+    async init() {
+        this.request = await request.newContext();
+    }
+
     async authenticate(username: string, password: string){
-        const response = await this.request.post(`${this.baseUrl}/auth/login`, {
+        await this.init()
+        const response = await this.request.post(`${this.baseUrl}/api/auth/login`, {
             data: { username, password }
         });
 
@@ -23,29 +30,34 @@ export class BookingAPI{
 
         const body = await response.json();
         this.token = body.token;
+        console.log(this.token);
+
 
     }
 
     async createBooking(bookingData: BookingRequest): Promise<BookingResponse> {
-        if (!this.token) {
-            throw new Error('Authentication required! Call authenticate() first.');
-        }
-        const response = await this.request.post(`${this.baseUrl}/booking`, {
-            headers: {
-                Cookie: `token=${this.token}`
-            },
-            data: bookingData });
-
-        if (response.status() !== 200) {
-            if (response.status() !== 200) {
-                const responseBody = await response.json();
-                console.error('Response Body:', responseBody);
-                throw new Error(`Failed to create booking! Status: ${response.status()}`);
-            }
+        await this.init()
+        if (!this.request) {
+            throw new Error("Request context is not initialized. Call init() first.");
         }
 
-        return await response.json();
+        const response = await this.request.post(`${this.baseUrl}/api/booking`, {
+            headers: { 'Content-Type': 'application/json' },
+            data: bookingData
+        });
+
+        if (!response.ok()) {
+            throw new Error(`Failed to create booking! Status: ${response.status()}`);
+        }
+
+        const responseData = await response.json();
+        console.log("Reservation successfully created:", responseData);
+        return responseData;
+
+
+
     }
+
 
     async getBooking(bookingId: number): Promise<BookingRequest> {
         const response = await this.request.get(`${this.baseUrl}/booking/${bookingId}`);
