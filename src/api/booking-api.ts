@@ -113,7 +113,6 @@ export class BookingAPI{
 
         console.log("Updated booking:", updatedDatas);
 
-        // Отправляем запрос на обновление
         const response = await this.request.put(`${this.baseUrl}/api/booking/${bookingId}`, {
             headers: {
                 'Cookie': `token=${token}`,
