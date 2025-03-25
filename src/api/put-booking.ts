@@ -1,35 +1,19 @@
-import { APIRequestContext } from '@playwright/test';
 import {BookingRequest} from "../models/booking-request-model";
-import {GetBookingAPI} from "./get-booking-by-roomid-api";
-import {GetBookingHelper} from "../helpers/get-booking-helper";
+import {getRequest} from "../core/utils/api-utils";
 
 const endpoint = 'api/booking';
 
 export class PutBookingAPI{
-    private request: APIRequestContext;
-    private baseUrl:  string = process.env.BASE_URL!;
 
-    constructor(request: APIRequestContext) {
-        this.request = request;
-    }
 
-    async updateBooking(bookingId: number, updatedData: Partial<BookingRequest>, roomId: number, token: string): Promise<void> {
-        const getBooking = new GetBookingAPI(this.request)
-        const getHelper = new GetBookingHelper(getBooking)
-        const currentBooking = await getHelper.getBookingsByRoomId(roomId, token);
-
-        if (!currentBooking || currentBooking.length === 0) {
-            throw new Error("Booking not found for update.");
-        }
-
-        const bookingToUpdate = currentBooking.bookings[0];
+    async updateBooking(bookingId: number, bookingToUpdate: BookingRequest,updatedData: Partial<BookingRequest>, token: string): Promise<any> {
 
         const updatedDatas = {
             ...bookingToUpdate,
             ...updatedData,
         };
 
-        const response = await this.request.put(`${this.baseUrl}/${endpoint}/${bookingId}`, {
+        const response = await getRequest().put(`/${endpoint}/${bookingId}`, {
             headers: {
                 'Cookie': `token=${token}`,
                 'Content-Type': 'application/json',
@@ -42,7 +26,8 @@ export class PutBookingAPI{
         }
 
         const updatedBooking = await response.json();
-        return updatedBooking;
-    }
 
+        return updatedBooking;
+
+    }
 }

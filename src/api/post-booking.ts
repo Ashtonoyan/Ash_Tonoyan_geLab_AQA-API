@@ -1,19 +1,13 @@
 import {APIRequestContext} from '@playwright/test';
 import {BookingRequest} from "../models/booking-request-model";
-import { APIResponse } from '@playwright/test';
-
-const endpoint = 'api/booking';
+import {BookingResponse} from "../models/booking-response-model";
+import {getRequest} from "../core/utils/api-utils";
 
 export class PostBooking {
-    private request: APIRequestContext;
-    private baseUrl: string = process.env.BASE_URL!;
 
-    constructor(request: APIRequestContext) {
-        this.request = request;
-    }
 
-    async createBooking(bookingData: Partial<BookingRequest>): Promise<APIResponse> {
-        const response = await this.request.post(`${this.baseUrl}/${endpoint}`, {
+    async createBooking(bookingData: BookingRequest): Promise<BookingResponse> {
+        const response = await getRequest().post(`/api/booking`, {
             headers: {'Content-Type': 'application/json'},
             data: bookingData
         })
@@ -22,6 +16,6 @@ export class PostBooking {
             throw new Error(`Failed to create booking! Status: ${response.status()}`);
         }
 
-        return response;
+        return response.json();
     }
 }
