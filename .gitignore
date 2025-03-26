@@ -18,3 +18,4 @@ node_modules/
 /playwright/.cache/
 /.idea
 auth-token.json
+.DS_Store

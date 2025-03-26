@@ -35,7 +35,7 @@ test.describe('API', () => {
         const bookingApi = new PostBooking();
         const bookingHelper = new PostBookingHelper(bookingApi);
 
-        const bookingData = BookingFactory.createBooking(roomNumber);
+        const bookingData = BookingFactory.correctPostBooking(roomNumber);
         const bookingResponse = await bookingHelper.createBooking(bookingData);
 
         await expect(bookingResponse.status()).toBe(200);
