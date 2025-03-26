@@ -6,9 +6,9 @@ export type BookingAPI = {
 }
 
 export const test = base.extend<BookingAPI>({
-    testHooks: [async ({ request }, use) => {
+    testHooks: [async ({request}, use) => {
         await setRequest(request);
         await use('');
-    }, { auto: true }
+    }, {auto: true}
     ]
 });

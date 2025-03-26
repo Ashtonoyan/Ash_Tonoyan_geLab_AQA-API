@@ -1,11 +1,12 @@
 import {getRequest} from "../core/utils/api-utils";
+import {APIResponse} from "@playwright/test";
 
 const endpoint = 'api/booking';
 
 export class DeleteBookingAPI {
 
 
-    async deleteBooking(bookingId: number, token: string): Promise<void> {
+    async deleteBooking(bookingId: number, token: string): Promise<APIResponse> {
         const response = await getRequest().delete(`/${endpoint}/${bookingId}`, {
             headers: {
                 'Cookie': `token=${token}`,
@@ -16,6 +17,6 @@ export class DeleteBookingAPI {
             throw new Error(`Failed to delete booking! Status: ${response.status()}`);
         }
 
-        console.log('Booking deleted successfully');
+        return response;
     }
 }

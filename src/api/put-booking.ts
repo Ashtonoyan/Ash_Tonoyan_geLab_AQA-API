@@ -1,12 +1,13 @@
 import {BookingRequest} from "../models/booking-request-model";
 import {getRequest} from "../core/utils/api-utils";
+import {APIResponse} from "@playwright/test";
 
 const endpoint = 'api/booking';
 
-export class PutBookingAPI{
+export class PutBookingAPI {
 
 
-    async updateBooking(bookingId: number, bookingToUpdate: BookingRequest,updatedData: Partial<BookingRequest>, token: string): Promise<any> {
+    async updateBooking(bookingId: number, bookingToUpdate: BookingRequest, updatedData: Partial<BookingRequest>, token: string): Promise<APIResponse> {
 
         const updatedDatas = {
             ...bookingToUpdate,
@@ -25,9 +26,7 @@ export class PutBookingAPI{
             throw new Error(`Failed to update booking! Status: ${response.status()}`);
         }
 
-        const updatedBooking = await response.json();
-
-        return updatedBooking;
+        return response;
 
     }
 }

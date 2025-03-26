@@ -1,4 +1,5 @@
 import {DeleteBookingAPI} from "../api/delete-booking";
+import {APIResponse} from "@playwright/test";
 
 export class DeleteBookingHelper {
     private bookingApi: DeleteBookingAPI;
@@ -7,7 +8,7 @@ export class DeleteBookingHelper {
         this.bookingApi = bookingApi;
     }
 
-    async deleteBooking(bookingId: number, token: string): Promise<void> {
+    async deleteBooking(bookingId: number, token: string): Promise<APIResponse> {
         const response = await this.bookingApi.deleteBooking(bookingId, token);
         return response;
     }

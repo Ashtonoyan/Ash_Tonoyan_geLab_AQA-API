@@ -18,13 +18,13 @@ export class AuthAPI {
     private static loadToken(): void {
         if (fs.existsSync(TOKEN_FILE_PATH)) {
             const tokenData = fs.readFileSync(TOKEN_FILE_PATH, "utf-8");
-            const { token } = JSON.parse(tokenData);
+            const {token} = JSON.parse(tokenData);
             AuthAPI.token = token;
         }
     }
 
     private static saveToken(token: string): void {
-        fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify({ token }), "utf-8");
+        fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify({token}), "utf-8");
         AuthAPI.token = token;
     }
 
@@ -37,8 +37,8 @@ export class AuthAPI {
 
     async authenticate(username: string, password: string): Promise<AuthenticationResponse> {
         const response = await getRequest().post(`/${endpoint}`, {
-            headers: { "Content-Type": "application/json" },
-            data: { username, password },
+            headers: {"Content-Type": "application/json"},
+            data: {username, password},
         });
 
         if (!response.ok()) {
