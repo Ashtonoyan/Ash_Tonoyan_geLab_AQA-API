@@ -3,6 +3,9 @@ import {AuthenticationResponse} from "../models/authentication-response-model";
 import {getRequest} from "../core/utils/api-utils";
 import * as fs from 'fs';
 import * as path from 'path';
+import {test} from "../core/api-fixtures";
+import {expect} from "@playwright/test";
+import {APIResponse} from "@playwright/test";
 
 const TOKEN_FILE_PATH = path.join(__dirname, '..', '..', 'auth-token.json');
 
@@ -28,27 +31,57 @@ export class AuthAPI {
         AuthAPI.token = token;
     }
 
-    public static getToken(): string | null {
+    public static async getValidToken(username: string, password: string): Promise<string> {
         if (!AuthAPI.token) {
             AuthAPI.loadToken();
         }
-        return AuthAPI.token;
-    }
 
-    async authenticate(username: string, password: string): Promise<AuthenticationResponse> {
-        const response = await getRequest().post(`/${endpoint}`, {
-            headers: {"Content-Type": "application/json"},
-            data: {username, password},
-        });
+        const isValid = await AuthAPI.validateToken();
 
-        if (!response.ok()) {
-            throw new Error(`Authentication failed. Status: ${response.status}`);
+        if (!isValid) {
+            console.log('Authenticating to get a new token...');
+            await AuthAPI.authenticate(username, password);
         }
 
-        const responseData: AuthenticationResponse = await response.json();
+        return AuthAPI.token!;
+    }
 
-        AuthAPI.saveToken(responseData.token);
+    private static async validateToken(): Promise<boolean> {
+        if (!AuthAPI.token) return false;
 
-        return responseData;
+        const response: APIResponse = await getRequest().get('/api/booking', {
+            params: {
+                roomid: 25,
+            },
+            headers: {
+                'Cookie': `token=${AuthAPI.token}`
+            }
+
+        });
+
+
+        if (response.status() === 401 || response.status() === 500) {
+            console.log('Token is invalid. Removing token file...');
+            fs.unlinkSync(TOKEN_FILE_PATH);
+            AuthAPI.token = null;
+            return false;
+        }
+
+        return true;
+    }
+
+    public static async authenticate(username: string, password: string): Promise<void> {
+        await test.step('User authentication', async () => {
+            const response = await getRequest().post(`/${endpoint}`, {
+                headers: {"Content-Type": "application/json"},
+                data: {username, password},
+            });
+
+            expect(response.ok(), `Authentication failed. Status: ${response.status()}`).toBeTruthy();
+
+            const responseData: AuthenticationResponse = await response.json();
+            AuthAPI.saveToken(responseData.token);
+        });
+
     }
 }

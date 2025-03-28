@@ -1,18 +1,14 @@
 import {test} from '../src/core/api-fixtures'
 import {expect} from "@playwright/test";
-import {AuthHelper} from "../src/helpers/auth-helper";
-import {AuthAPI} from "../src/api/auth-api";
-import {PostBooking} from "../src/api/post-booking";
-import {PostBookingHelper} from "../src/helpers/post-booking-helper";
+import {AuthAPIHelper} from "../src/helpers/auth-helper";
+import {PostBookingAPIHelper} from "../src/helpers/post-booking-helper";
 import {BookingFactory} from "../src/factories/booking-factory";
-import {GetBookingByRoomIDAPI} from "../src/api/get-bookingByRoomID";
-import {GetBookingHelper} from "../src/helpers/get-booking-helper";
-import {PutBookingAPI} from "../src/api/put-booking";
-import {PutBookingHelper} from "../src/helpers/put-booking-helper";
-import {DeleteBookingAPI} from "../src/api/delete-booking";
-import {DeleteBookingHelper} from "../src/helpers/delete-booking-helper";
+import {GetBookingAPIHelper} from "../src/helpers/get-booking-helper";
+import {PutBookingAPIHelper} from "../src/helpers/put-booking-helper";
+import {DeleteBookingAPIHelper} from "../src/helpers/delete-booking-helper";
 import {faker} from '@faker-js/faker'
 import {setRequest} from "../src/core/utils/api-utils";
+import {SoftAssert} from "../src/helpers/soft-assert";
 
 let token: string;
 const roomNumber = faker.number.int({min: 3, max: 2000});
@@ -21,39 +17,44 @@ test.describe('API', () => {
     test.beforeAll('Authenfication', async ({request}) => {
         await setRequest(request);
 
-        token = AuthAPI.getToken()!;
-
-        if (!token) {
-            const authAPI = new AuthAPI()
-            const authHelper = new AuthHelper(authAPI)
-            const authResponse = await authHelper.authenticate();
-            token = authResponse.token;
-        }
+        token = await AuthAPIHelper.authenticate()
     })
 
     test('Post Booking', async () => {
-        const bookingApi = new PostBooking();
-        const bookingHelper = new PostBookingHelper(bookingApi);
+        const softAssert = new SoftAssert();
+        const bookingData = BookingFactory.validPostBooking(roomNumber);
+        const bookingResponse = await PostBookingAPIHelper.createBooking(bookingData);
 
-        const bookingData = BookingFactory.correctPostBooking(roomNumber);
-        const bookingResponse = await bookingHelper.createBooking(bookingData);
 
-        await expect(bookingResponse.status()).toBe(200);
+        softAssert.assert(
+            bookingResponse.status() === 200,
+            `Expected status to be 200, but got ${bookingResponse.status()}`
+        );
 
-        await expect(bookingResponse.headers()['content-type']).toContain('application/json');
+        softAssert.assert(
+            bookingResponse.headers()['content-type']?.includes('application/json'),
+            `Expected 'Content-Type' header to contain 'application/json', but got '${bookingResponse.headers()['content-type']}'`
+        );
+
+        softAssert.check();
+        ;
 
     })
 
 
     test('Get Bookings', async () => {
+        const softAssert = new SoftAssert();
+        const response = await GetBookingAPIHelper.getBooking(roomNumber, token)
 
-        const getBooking = new GetBookingByRoomIDAPI()
-        const getBookingHelper = new GetBookingHelper(getBooking);
-        const response = await getBookingHelper.getBooking(roomNumber, token)
+        softAssert.assert(
+            response.status() === 200,
+            `Expected status to be 200, but got ${response.status()}`
+        );
 
-        expect(response.status()).toBe(200);
-
-        expect(response.headers()['content-type']).toContain('application/json');
+        softAssert.assert(
+            response.headers()['content-type']?.includes('application/json'),
+            `Expected 'Content-Type' header to contain 'application/json', but got '${response.headers()['content-type']}'`
+        );
 
         const responseBody = await response.json();
         expect(responseBody).toHaveProperty('bookings');
@@ -61,58 +62,105 @@ test.describe('API', () => {
         expect(responseBody.bookings.length).toBeGreaterThan(0);
 
         const firstBooking = responseBody.bookings[0];
-        expect(firstBooking).toHaveProperty('bookingid');
-        expect(firstBooking).toHaveProperty('roomid');
-        expect(firstBooking).toHaveProperty('firstname');
-        expect(firstBooking).toHaveProperty('lastname');
-        expect(firstBooking).toHaveProperty('depositpaid');
-        expect(firstBooking).toHaveProperty('bookingdates');
-        expect(firstBooking.bookingdates).toHaveProperty('checkin');
-        expect(firstBooking.bookingdates).toHaveProperty('checkout');
+        softAssert.assert(
+            firstBooking.hasOwnProperty('bookingid'),
+            `Property 'bookingid' is missing in the firstBooking object`
+        );
+
+        softAssert.assert(
+            firstBooking.hasOwnProperty('roomid'),
+            `Property 'roomid' is missing in the firstBooking object`
+        );
+
+        softAssert.assert(
+            firstBooking.hasOwnProperty('firstname'),
+            `Property 'firstname' is missing in the firstBooking object`
+        );
+
+        softAssert.assert(
+            firstBooking.hasOwnProperty('lastname'),
+            `Property 'lastname' is missing in the firstBooking object`
+        );
+
+        softAssert.assert(
+            firstBooking.hasOwnProperty('depositpaid'),
+            `Property 'depositpaid' is missing in the firstBooking object`
+        );
+
+        softAssert.assert(
+            firstBooking.hasOwnProperty('bookingdates'),
+            `Property 'bookingdates' is missing in the firstBooking object`
+        );
+
+        softAssert.assert(
+            firstBooking.bookingdates.hasOwnProperty('checkin'),
+            `Property 'checkin' is missing in bookingdates`
+        );
+
+        softAssert.assert(
+            firstBooking.bookingdates.hasOwnProperty('checkout'),
+            `Property 'checkout' is missing in bookingdates`
+        );
+
+        softAssert.check();
 
     })
 
     test('Put Bookings', async () => {
-
-        const getBooking = new GetBookingByRoomIDAPI()
-        const getBookingHelper = new GetBookingHelper(getBooking);
-        const bookings = await getBookingHelper.getBooking(roomNumber, token)
+        const softAssert = new SoftAssert();
+        const bookings = await GetBookingAPIHelper.getBooking(roomNumber, token)
         const responseBody = await bookings.json();
 
         const bookingToUpdate = responseBody.bookings[0]
 
-        const putBooking = new PutBookingAPI()
-        const putBookingHelper = new PutBookingHelper(putBooking);
         const bookingData = BookingFactory.updateBooking();
 
-        const response = await putBookingHelper.updateBooking(bookingToUpdate.bookingid, bookingToUpdate, bookingData, token);
+        const response = await PutBookingAPIHelper.updateBooking(bookingToUpdate.bookingid, bookingToUpdate, bookingData, token);
 
-        expect(response.status()).toBe(200);
+        softAssert.assert(
+            response.status() === 200,
+            `Expected response status to be 200, but got ${response.status()}`
+        );
 
-        expect(response.headers()['content-type']).toContain('application/json');
+        softAssert.assert(
+            response.headers()['content-type']?.includes('application/json'),
+            `Expected 'Content-Type' header to contain 'application/json', but got '${response.headers()['content-type']}'`
+        );
 
         const responseJson = await response.json();
-        expect(responseJson).toHaveProperty('success', true);
+        softAssert.assert(
+            responseJson.hasOwnProperty('success') && responseJson.success === true,
+            `Expected 'success' property to be true, but got ${responseJson.success}`
+        );
+
+        softAssert.check();
 
     })
 
     test('Delete Bookings', async () => {
-        const getBooking = new GetBookingByRoomIDAPI()
-        const getBookingHelper = new GetBookingHelper(getBooking);
-        const bookings = await getBookingHelper.getBooking(roomNumber, token)
+        const softAssert = new SoftAssert();
+        const bookings = await GetBookingAPIHelper.getBooking(roomNumber, token)
         const responseBody = await bookings.json();
 
+        const response = await DeleteBookingAPIHelper.deleteBooking(responseBody.bookings[0].bookingid, token)
 
-        const deleteBooking = new DeleteBookingAPI()
-        const deleteHelper = new DeleteBookingHelper(deleteBooking)
-        const response = await deleteHelper.deleteBooking(responseBody.bookings[0].bookingid, token)
+        softAssert.assert(
+            response.status() === 200,
+            `Expected response status to be 200, but got ${response.status()}`
+        );
 
-        expect(response.status()).toBe(200);
-
-        expect(response.headers()['content-type']).toContain('application/json');
+        softAssert.assert(
+            response.headers()['content-type']?.includes('application/json'),
+            `Expected 'Content-Type' header to contain 'application/json', but got '${response.headers()['content-type']}'`
+        );
 
         const responseJson = await response.json();
-        expect(responseJson).toHaveProperty('success', true);
+        softAssert.assert(
+            responseJson.hasOwnProperty('success') && responseJson.success === true,
+            `Expected 'success' property to be true, but got ${responseJson.success}`
+        );
+
+        softAssert.check();
     })
 
 })

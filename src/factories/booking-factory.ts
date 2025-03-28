@@ -15,7 +15,7 @@ const getDatesForBooking = () => {
 };
 
 export class BookingFactory {
-    static correctPostBooking(room: number): BookingRequest {
+    static validPostBooking(room: number): BookingRequest {
         return {
             roomid: room,
             firstname: "Cristiano",
