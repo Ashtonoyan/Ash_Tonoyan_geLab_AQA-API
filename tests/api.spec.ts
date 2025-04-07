@@ -17,9 +17,6 @@ test.describe('API', () => {
         await setRequest(request);
 
         token = await AuthAPIHelper.authenticate()
-    })
-
-    test('Post Booking', async () => {
         const bookingData = BookingFactory.validPostBooking(roomNumber);
         const bookingResponse = await PostBookingAPIHelper.createBooking(bookingData);
 
@@ -29,9 +26,8 @@ test.describe('API', () => {
         expect.soft(bookingResponse.headers()['content-type']?.includes('application/json'),
             `Expected 'Content-Type' header to contain 'application/json', but got '${bookingResponse.headers()['content-type']}'`)
             .toBe(true);
-
-
     })
+
 
 
     test('Get Bookings', async () => {
