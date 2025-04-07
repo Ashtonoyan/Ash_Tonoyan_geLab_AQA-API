@@ -12,22 +12,25 @@ import {setRequest} from "../src/core/utils/api-utils";
 let token: string;
 const roomNumber = faker.number.int({min: 3, max: 2000});
 
-test.describe('API', () => {
+test.describe.serial('API', () => {
     test.beforeAll('Authenfication', async ({request}) => {
         await setRequest(request);
 
         token = await AuthAPIHelper.authenticate()
+    })
+
+    test('Post Booking', async () => {
         const bookingData = BookingFactory.validPostBooking(roomNumber);
         const bookingResponse = await PostBookingAPIHelper.createBooking(bookingData);
-
 
         expect.soft(bookingResponse.status(), `Expected status to be 200, but got ${bookingResponse.status()}`).toBe(200);
 
         expect.soft(bookingResponse.headers()['content-type']?.includes('application/json'),
             `Expected 'Content-Type' header to contain 'application/json', but got '${bookingResponse.headers()['content-type']}'`)
             .toBe(true);
-    })
 
+
+    })
 
 
     test('Get Bookings', async () => {
@@ -65,6 +68,7 @@ test.describe('API', () => {
         const responseBody = await bookings.json();
 
         const bookingToUpdate = responseBody.bookings[0]
+
 
         const bookingData = BookingFactory.updateBooking();
 
