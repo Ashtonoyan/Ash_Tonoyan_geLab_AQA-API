@@ -3,27 +3,27 @@ pipeline:
     label: any
 
   environment:
-    CI: "true" 
+    CI: "true"  # Это строка, как и требовалось
 
   stages:
     - stage: Checkout Code
       steps:
-        - checkout: true 
+        - checkout: true  # Булевое значение, правильно
 
     - stage: Install Dependencies
       steps:
-        - sh: npm ci
+        - sh: 'npm ci'  # Команда, выполненная через sh
 
     - stage: Install Playwright Browsers
       steps:
-        - sh: npx playwright install
+        - sh: 'npx playwright install'  # Команда для установки браузеров
 
     - stage: Run Playwright Tests
       steps:
-        - sh: npx playwright test
+        - sh: 'npx playwright test'  # Запуск тестов
 
     - stage: Archive Report
       steps:
-        - sh: zip -r playwright-report.zip playwright-report || true  
+        - sh: 'zip -r playwright-report.zip playwright-report || true'  # Команда для архивации с игнорированием ошибок
         - archiveArtifacts:
-            artifacts: playwright-report.zip
+            artifacts: 'playwright-report.zip'  # Артефакт для сохранения
