@@ -1,29 +1,8 @@
 pipeline:
   agent:
-    label: any  # Указывает, что пайплайн может работать на любом доступном агенте
-
-  environment:
-    CI: "true"  # Переменная окружения CI
+    label: any
 
   stages:
-    - stage: Checkout Code
+    - stage: "Checkout Code"
       steps:
-        - checkout scm  # Стандартный шаг для клонирования репозитория в Jenkins
-
-    - stage: Install Dependencies
-      steps:
-        - sh: 'npm ci'  # Устанавливаем зависимости с использованием npm
-
-    - stage: Install Playwright Browsers
-      steps:
-        - sh: 'npx playwright install'  # Устанавливаем необходимые браузеры для Playwright
-
-    - stage: Run Playwright Tests
-      steps:
-        - sh: 'npx playwright test'  # Запускаем тесты с использованием Playwright
-
-    - stage: Archive Report
-      steps:
-        - sh: 'zip -r playwright-report.zip playwright-report || true'  # Архивируем отчет
-        - archiveArtifacts:
-            artifacts: 'playwright-report.zip'  # Архивируем файл отчета
+        - checkout: scm  # Попробуй так, чтобы исключить лишние параметры
