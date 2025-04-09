@@ -1,8 +1,8 @@
 pipeline:
   agent:
     label: any
-
   stages:
     - stage: "Checkout Code"
       steps:
-        - checkout: scm  # Попробуй так, чтобы исключить лишние параметры
+        - checkout:
+            scm: ${{checkout scm}}
