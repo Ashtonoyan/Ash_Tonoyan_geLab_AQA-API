@@ -3,12 +3,12 @@ pipeline:
     label: any
 
   environment:
-    CI: "true"
+    CI: "true" 
 
   stages:
     - stage: Checkout Code
       steps:
-        - checkout: "true"
+        - checkout: true 
 
     - stage: Install Dependencies
       steps:
@@ -24,6 +24,6 @@ pipeline:
 
     - stage: Archive Report
       steps:
-        - sh: zip -r playwright-report.zip playwright-report || "true"
+        - sh: zip -r playwright-report.zip playwright-report || true  
         - archiveArtifacts:
             artifacts: playwright-report.zip
