@@ -1,14 +1,14 @@
 pipeline:
   agent:
-    label: any
+    label: any  # Указывает, что пайплайн может работать на любом доступном агенте
 
   environment:
-    CI: "true"  # Переменная окружения CI, строка
+    CI: "true"  # Переменная окружения CI
 
   stages:
     - stage: Checkout Code
       steps:
-        - checkout scm  # Используем стандартное описание для клонирования репозитория
+        - checkout scm  # Стандартный шаг для клонирования репозитория в Jenkins
 
     - stage: Install Dependencies
       steps:
@@ -24,6 +24,6 @@ pipeline:
 
     - stage: Archive Report
       steps:
-        - sh: 'zip -r playwright-report.zip playwright-report || true'  # Архивируем отчёт
+        - sh: 'zip -r playwright-report.zip playwright-report || true'  # Архивируем отчет
         - archiveArtifacts:
-            artifacts: 'playwright-report.zip'  # Архивируем файл отчёта
+            artifacts: 'playwright-report.zip'  # Архивируем файл отчета
